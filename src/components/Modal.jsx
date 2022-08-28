@@ -1,19 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Mensaje from "./Mensaje";
 
 import CerrarBtn from "../img/cerrar.svg";
 
-export const Modal = ({ setModal, animarModal, setAnimarModal, guardarGasto }) => {
+export const Modal = ({ 
+	setModal, 
+	animarModal, 
+	setAnimarModal, 
+	guardarGasto,
+	gastoEditar,
+	setGastoEditar
+ }) => {
 
     const [mensaje, setMensaje] = useState("")
 
     const [nombre, setNombre] = useState("")
     const [cantidad, setCantidad] = useState("")
     const [categoria, setCategoria] = useState("")
+	const [id, setId] = useState("")
+	const [fecha, setFecha] = useState("")
+
+	useEffect(() => {
+		if(Object.keys(gastoEditar).length > 0){
+			setNombre(gastoEditar.nombre)
+			setCantidad(gastoEditar.cantidad)
+			setCategoria(gastoEditar.categoria)
+			setId(gastoEditar.id)
+			setFecha(gastoEditar.fecha)
+		  }
+	},[])
 
     // Para Ocultar el modal al hacer Click en la X
 	const ocultarModal = () => {
 		setModal(false);
+		// Para que no cargue el modal automaticamente al hacer cambios en los archivos 
+		// debido a que se queda el state con el cambio. (limpiar state)
+		setGastoEditar({})
 		setTimeout(() => {
 			setAnimarModal(false);
 		}, 500);
@@ -31,7 +53,7 @@ export const Modal = ({ setModal, animarModal, setAnimarModal, guardarGasto }) =
 
             return;
         }
-        guardarGasto({nombre, cantidad, categoria})
+        guardarGasto({nombre, cantidad, categoria, id, fecha})
     }
 
 	return (
@@ -47,7 +69,7 @@ export const Modal = ({ setModal, animarModal, setAnimarModal, guardarGasto }) =
                 className={`formulario ${animarModal ? "animar" : "cerrar"}`}
                 onSubmit={handleSubmit}
                 >
-					<legend>Nuevo Gasto</legend>
+					<legend>{gastoEditar.nombre ? "Editar Gasto" : "Nuevo Gasto"}</legend>
                     {/* Componente Mensaje que muestra el error en caso de mal validacion */}
                     {mensaje && <Mensaje tipo="error">{mensaje}</Mensaje>}
 
@@ -91,7 +113,7 @@ export const Modal = ({ setModal, animarModal, setAnimarModal, guardarGasto }) =
 
                     <input
                     type="submit"
-                    value="Añadir Gasto"
+                    value={gastoEditar.nombre ? "Guardar Cambios" : "Añadir Gasto"}
                      />
 
 				</form>

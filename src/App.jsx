@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import { Modal } from "./components/Modal";
 import { ListadoGastos } from "./components/ListadoGastos";
@@ -18,11 +18,25 @@ function App() {
   const [modal, setModal] = useState(false)
   const [animarModal, setAnimarModal] = useState(false)
 
-  
+  // Editar un gasto
+  const [gastoEditar, setGastoEditar] = useState({})
 
+  // Cuando se deslice y se añada un gasto a gastoEditar si trigerea este useEffect
+  // y abre el modal para su edicción
+  useEffect(() => {
+    if(Object.keys(gastoEditar).length > 0){
+      setModal(true)
+    // segundos que tarda en desplegarse la animación de "Nuevo Gasto"
+    setTimeout(() => {
+      setAnimarModal(true)
+    }, 500)
+    }
+  },[gastoEditar])
+
+  // Abrir el modal
   const handleNuevoGasto = () => {
     setModal(true)
-
+    setGastoEditar({})
     // segundos que tarda en desplegarse la animación de "Nuevo Gasto"
     setTimeout(() => {
       setAnimarModal(true)
@@ -30,17 +44,34 @@ function App() {
   }
 
   const guardarGasto = (gasto) => {
-    // genera la id para el objeto gasto con el helper generarId y luego guardamos
-    // el nuevo objeto gasto en el state gastos copiando todos los que haya
-    gasto.id = generarId();
-    gasto.fecha = Date.now();
-    setGastos([...gastos, gasto])
+    if(gasto.id){
+      // actualizar
+      const gastosActualiados = gastos.map(gastoState => 
+        gastoState.id === gasto.id ? gasto : gastoState)
 
+      setGastos(gastosActualiados)
+      // limpiarState
+      setGastoEditar({})
+    } else {
+      // Nuevo gasto
+      // genera la id para el objeto gasto con el helper generarId y luego guardamos
+      // el nuevo objeto gasto en el state gastos copiando todos los que haya
+      gasto.id = generarId();
+      gasto.fecha = Date.now();
+      setGastos([...gastos, gasto])
+    }
     // Para cerrar el modal una vez hacemos click en añadir gasto
     setModal(false);
 		setTimeout(() => {
 			setAnimarModal(false);
 		}, 500);
+  }
+
+  // filtramos los gastos por la id que obtenemos a través del swip y seteamos
+  // otra vez los gastos pero sin el elemento igual a la id suministrada
+  const eliminarGasto = id => {
+    const gastosActualizados = gastos.filter(gasto => gasto.id !== id)
+    setGastos(gastosActualizados)
   }
 
 	return (
@@ -58,6 +89,8 @@ function App() {
           <main>
             <ListadoGastos
               gastos={gastos}
+              setGastoEditar={setGastoEditar}
+              eliminarGasto={eliminarGasto}
             />
           </main>
 
@@ -78,6 +111,8 @@ function App() {
         animarModal={animarModal}
         setAnimarModal={setAnimarModal}
         guardarGasto={guardarGasto}
+        gastoEditar={gastoEditar}
+        setGastoEditar={setGastoEditar}
       />}
 
 		</div>

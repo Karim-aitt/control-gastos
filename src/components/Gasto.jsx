@@ -42,7 +42,7 @@ const diccionarioIconos = {
     suscripciones: IconoSuscripciones
 }
 
-const Gasto = ({ gasto }) => {
+const Gasto = ({ gasto, setGastoEditar, eliminarGasto }) => {
 
 	const { categoria, nombre, cantidad, id, fecha } = gasto;
 
@@ -50,13 +50,17 @@ const Gasto = ({ gasto }) => {
     // el parentesis significa "return", muestra el siguiente componente
     const leadingActions = () => (
         <LeadingActions>
-            <SwipeAction onClick={() => {""}}>Editar</SwipeAction>
+            <SwipeAction onClick={() => setGastoEditar(gasto)}>Editar</SwipeAction>
         </LeadingActions>
     )
 
     const trailingActions = () => (
         <TrailingActions>
-            <SwipeAction onClick={() => {""}}>Eliminar</SwipeAction>
+            <SwipeAction 
+            onClick={() => {eliminarGasto(id)}}
+            // Animación de Eliminar, de la libreria de Swipe
+            destructive={true}
+            >Eliminar</SwipeAction>
         </TrailingActions>
     )
 
