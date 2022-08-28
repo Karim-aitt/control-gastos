@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import { Modal } from "./components/Modal";
 import { ListadoGastos } from "./components/ListadoGastos";
+import { Filtros } from "./components/Filtros";
 
 import { generarId } from "./helpers";
 
@@ -9,9 +10,16 @@ import { generarId } from "./helpers";
 import IconoNuevoGasto from "./img/nuevo-gasto.svg";
 
 function App() {
-  const [gastos, setGastos] = useState([])  
 
-	const [presupuesto, setPresupuesto] = useState(0);
+  // Comprobamos en LocalStorage si existen "gastos" si existen, los transformamos
+  // a array, si no existe []
+  const [gastos, setGastos] = useState(
+    localStorage.getItem("gastos") ? JSON.parse(localStorage.getItem("gastos")) : []
+  )  
+
+  // Obtenemos de localStorage el valor de presupuesto, si no existe, entonces 0
+	const [presupuesto, setPresupuesto] = useState(Number(localStorage.getItem("presupuesto")) ?? 0);
+
 	const [isValidPresupuesto, setIsValidPresupuesto] = useState(false);
 
   // Crear un modal
@@ -20,6 +28,10 @@ function App() {
 
   // Editar un gasto
   const [gastoEditar, setGastoEditar] = useState({})
+
+  const [filtro, setFiltro] = useState("")
+  const [gastosFiltrados, setGastosFiltrados] = useState([])
+
 
   // Cuando se deslice y se añada un gasto a gastoEditar si trigerea este useEffect
   // y abre el modal para su edicción
@@ -74,10 +86,44 @@ function App() {
     setGastos(gastosActualizados)
   }
 
+  // Setea en LocalStorage el presupuesto si existe, si no, 0.
+  useEffect(() => {
+    localStorage.setItem("presupuesto", presupuesto ?? 0)
+  }, [presupuesto])
+
+  // Setea en LocalStorage los gastos
+  useEffect(() => {
+    // No se pueden almacenar arrays en localStorage, por lo que hay que convertirlo a string
+    localStorage.setItem("gastos", JSON.stringify(gastos) ?? [])
+  }, [gastos])
+
+  useEffect(() => {
+    if(filtro){
+      // Filtrar gastos por categoria en el filtro
+      const gastosFiltrados = gastos.filter(gasto => gasto.categoria === filtro)
+      setGastosFiltrados(gastosFiltrados)
+    }
+  },[filtro])
+
+  useEffect(() => {
+    const presupuestoLS = Number(localStorage.getItem("presupuesto")) ?? 0;
+
+    // Si este presupuesto es mayor a 0, quiere decir que es valido,
+    // por lo que seteamos la flag a true y entonces entramos directamente en la segunda
+    // pantalla y nos saltamos la de añadir presupuesto
+
+    if(presupuestoLS > 0){
+      setIsValidPresupuesto(true)
+    }
+  }, [])
+
+  
+
 	return (
 		<div className={modal ? "fijar" : ""}>
 			<Header
         gastos={gastos}
+        setGastos={setGastos}
 				presupuesto={presupuesto}
 				setPresupuesto={setPresupuesto}
 				isValidPresupuesto={isValidPresupuesto}
@@ -87,10 +133,16 @@ function App() {
       {isValidPresupuesto && (
         <>
           <main>
+            <Filtros 
+              filtro={filtro}
+              setFiltro={setFiltro}
+            />
             <ListadoGastos
               gastos={gastos}
               setGastoEditar={setGastoEditar}
               eliminarGasto={eliminarGasto}
+              filtro={filtro}
+              gastosFiltrados={gastosFiltrados}
             />
           </main>
 
@@ -103,6 +155,15 @@ function App() {
 			    </div>
       </>
       )}
+      <div className="contenedor sombra footer">
+        <p className="">
+        Creado por {""}
+        <a href="https://github.com/Karim-aitt" target="_blank">
+          Karim Gonzalez
+        </a>
+        {""} 2022
+        </p>
+      </div>
 
 			{modal &&
 
